@@ -1,60 +1,64 @@
-# Linear regression x => using gradient descent
+# Multivariable linear regression x => y using gradient descent
 #
-# Example: gradient_descent(0, 0, 0.01, 1000)
+# Example: gradient_descent([0, 0, 0], 0.01, 1000)
 #
 
 import numpy as np
 
 x_1 = [600, 200, 300, 523, 234, 123] # feature 1 samples
 x_2 = [3, 2.5, 4, 5, 5, 3] # feature 2 samples
-x = x_1 # for single-feature regression
 m = len(x_1)
-xs = np.vstack(([1] * m, x_1, x_2)) # for multi-feature regression
+x = np.vstack(([1] * m, x_1, x_2)) # for multi-feature regression
 
 y = [20000, 12000, 14020, 21000, 13210, 11500] # values to predict
 
-assert len(x) == len(y)
+assert len(x_1) == len(y)
 
-def h(theta_0, theta_1):
-    return theta_0 + np.multiply(theta_1, x)
+def h(theta): # [theta_0, theta_1, ...]
+    return np.dot(theta, x)
 
-def J(theta_0, theta_1):
-    return 0.5/m * np.sum((h(theta_0, theta_1) - y) ** 2)
+def J(theta):
+    return 0.5/m * np.sum((h(theta) - y) ** 2)
 
-def dJ_0(theta_0, theta_1): # dJ / dtheta_0
-    return 1.0/m * np.sum(h(theta_0, theta_1) - y)
+def dJ(theta): # dJ / dtheta
+    return 1.0/m * np.dot(h(theta) - y, x.T)
 
-def dJ_1(theta_0, theta_1): # dJ / dtheta_0
-    return 1.0/m * np.sum(np.multiply(h(theta_0, theta_1) - y, x))
+def mean_and_range(x):
+    a = np.mean(x, axis=1)
+    r = np.ptp(x, axis=1) + 1
+    return a, r
+
+def mean_and_range_tiled(x):
+    a, r = mean_and_range(x)
+    a = np.tile(a, (m, 1)).T
+    r = np.tile(r, (m, 1)).T
+    return a, r
 
 def normalize(x):
-    return (x - np.mean(x)) / (np.max(x) - np.min(x) + 1)
+    a, r = mean_and_range_tiled(x)
+    x = (x - a) / r
+    x[0,:] = 1
+    return x
 
-def denormalize(x, theta_0, theta_1):
-    range = np.max(x) - np.min(x) + 1
-    return theta_0 - np.mean(x) * theta_1 / range, theta_1 / range
+def denormalize(x, theta):
+    a, r = mean_and_range(x)
+    w = np.identity(len(theta)) / r
+    w[:,0] = -a / r
+    w[0,0] = 1
+    return np.dot(theta, w)
 
-def gradient_descent(theta_0, theta_1, alpha, steps):
+def gradient_descent(theta, alpha, steps):
     global x
     x_restore = x
     x = normalize(x)
     print x
     for i in range(steps):
-        d_0 = dJ_0(theta_0, theta_1)
-        d_1 = dJ_1(theta_0, theta_1)
-        theta_0 -= alpha * d_0
-        theta_1 -= alpha * d_1
-        j = J(theta_0, theta_1)
-        print 'Step #{0}: {1}, {2} => {3} ({4}, {5})'.format(i, theta_0, theta_1, j, d_0, d_1)
+        d = dJ(theta)
+        theta -= alpha * d
+        j = J(theta)
+        print 'Step #{0}: {1} => {2} ({3})'.format(i, theta, j, d)
     x = x_restore
-    theta_0, theta_1 = denormalize(x, theta_0, theta_1)
-    print theta_0, theta_1
+    theta = denormalize(x, theta)
+    print theta
+    return theta
 
-"""
-def h_(theta): # [theta_0, theta_1, ...]
-    return np.dot(theta, xs)
-
-def J_(theta):
-    m = len(xs[0])
-    return 0.5/m * np.sum((h(theta) - y) ** 2)
-    """

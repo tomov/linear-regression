@@ -45,3 +45,4 @@ def gradient_descent(theta_0, theta_1, alpha, steps):
     x = x_restore
     theta_0, theta_1 = denormalize(x, theta_0, theta_1)
     print theta_0, theta_1
+    return theta_0, theta_1

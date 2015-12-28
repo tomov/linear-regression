@@ -47,7 +47,7 @@ def denormalize(x, theta):
     w[0,0] = 1
     return np.dot(theta, w)
 
-def gradient_descent(theta, alpha, steps):
+def gradient_descent(theta, alpha, steps, do_print=False):
     global x
     x_restore = x
     x = normalize(x)
@@ -56,9 +56,11 @@ def gradient_descent(theta, alpha, steps):
         d = dJ(theta)
         theta -= alpha * d
         j = J(theta)
-        print 'Step #{0}: {1} => {2} ({3})'.format(i, theta, j, d)
+        if do_print:
+            print 'Step #{0}: {1} => {2} ({3})'.format(i, theta, j, d)
     x = x_restore
     theta = denormalize(x, theta)
-    print theta
+    if do_print:
+        print theta
     return theta
 

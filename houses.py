@@ -30,7 +30,7 @@ def denormalize(x, theta_0, theta_1):
     range = np.max(x) - np.min(x) + 1
     return theta_0 - np.mean(x) * theta_1 / range, theta_1 / range
 
-def gradient_descent(theta_0, theta_1, alpha, steps):
+def gradient_descent(theta_0, theta_1, alpha, steps, do_print=False):
     global x
     x_restore = x
     x = normalize(x)
@@ -41,8 +41,10 @@ def gradient_descent(theta_0, theta_1, alpha, steps):
         theta_0 -= alpha * d_0
         theta_1 -= alpha * d_1
         j = J(theta_0, theta_1)
-        print 'Step #{0}: {1}, {2} => {3} ({4}, {5})'.format(i, theta_0, theta_1, j, d_0, d_1)
+        if do_print:
+            print 'Step #{0}: {1}, {2} => {3} ({4}, {5})'.format(i, theta_0, theta_1, j, d_0, d_1)
     x = x_restore
     theta_0, theta_1 = denormalize(x, theta_0, theta_1)
-    print theta_0, theta_1
+    if do_print:
+        print theta_0, theta_1
     return theta_0, theta_1
